@@ -1,0 +1,38 @@
+name: Build AudioGridder VST3
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch: # GitHubの画面から手動実行も可能にします
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest] # 必要に応じて ubuntu-latest も追加可能
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+       python-version: '3.x'
+
+    - name: Run Build Script
+      run: |
+        python3 build.py
+      shell: bash
+
+    # ビルドされた成果物をArtifactとして保存する設定例
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: AudioGridder-VST3-${{ matrix.os }}
+        path: |
+          **/*.vst3
+          **/*.zip

@@ -1,38 +1,48 @@
-name: Build AudioGridder VST3
+name: Build AudioGridder VST3 (Windows)
 
 on:
   push:
     branches: [ main, master ]
-  workflow_dispatch: # GitHubの画面から手動実行も可能にします
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-latest, macos-latest] # 必要に応じて ubuntu-latest も追加可能
+    name: Build for Windows
+    runs-on: windows-latest
 
     steps:
-    - name: Checkout repository
+    - name: Checkout AudioGridder
       uses: actions/checkout@v4
       with:
         submodules: recursive
 
+    - name: Checkout audiogridder-deps
+      uses: actions/checkout@v4
+      with:
+        repository: apohl79/audiogridder-deps
+        path: audiogridder-deps
+
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
-       python-version: '3.x'
+        python-version: '3.x'
 
-    - name: Run Build Script
+    - name: Configure Build
       run: |
-        python3 build.py
+        python3 build.py conf --disable-signing
       shell: bash
 
-    # ビルドされた成果物をArtifactとして保存する設定例
-    - name: Upload Artifacts
+    - name: Build AudioGridder
+      run: |
+        python3 build.py build
+      shell: bash
+
+    - name: Upload VST3 Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: AudioGridder-VST3-${{ matrix.os }}
+        name: AudioGridder-VST3-Windows
         path: |
           **/*.vst3
-          **/*.zip
+          **/audiogridder_vst3.zip
+          build/**/*.vst3
+          

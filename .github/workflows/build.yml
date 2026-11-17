@@ -1,0 +1,48 @@
+name: Build AudioGridder VST3 (Windows)
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build for Windows
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout AudioGridder
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Checkout audiogridder-deps
+      uses: actions/checkout@v4
+      with:
+        repository: apohl79/audiogridder-deps
+        path: audiogridder-deps
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Configure Build
+      run: |
+        python3 build.py conf --disable-signing
+      shell: bash
+
+    - name: Build AudioGridder
+      run: |
+        python3 build.py build
+      shell: bash
+
+    - name: Upload VST3 Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: AudioGridder-VST3-Windows
+        path: |
+          **/*.vst3
+          **/audiogridder_vst3.zip
+          build/**/*.vst3
+          
